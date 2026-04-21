@@ -1,0 +1,16 @@
+.venv/
+.venv311/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.DS_Store
+build/
+dist/
+*.egg-info/
+
+.env
+voicebridge.db
+data/
