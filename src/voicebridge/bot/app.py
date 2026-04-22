@@ -74,7 +74,6 @@ async def _run_polling() -> None:
         ]
     )
     asr_router = AsrRouter(
-        auto_provider=settings.asr_provider_auto,
         uz_provider=settings.asr_provider_uz,
         ru_provider=settings.asr_provider_ru,
         en_provider=settings.asr_provider_en,

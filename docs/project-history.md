@@ -47,7 +47,7 @@ This separation mattered because speech models behave more predictably on consis
 The initial design already assumed that one ASR model might not be best for every language.
 That led to a routed ASR service:
 
-- `faster-whisper` for `auto`, Russian, and English
+- `faster-whisper` for Russian and English
 - NVIDIA NeMo Uzbek ASR for explicit Uzbek mode
 
 This decision came from practical testing: Whisper was reasonable for Russian and English, but

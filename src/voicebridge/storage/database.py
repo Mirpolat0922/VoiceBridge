@@ -32,3 +32,12 @@ class Database:
                 )
                 """
             )
+            # Migrate legacy auto-detection settings to the explicit Russian source default.
+            connection.execute(
+                """
+                UPDATE user_settings
+                SET source_language = 'ru',
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE source_language = 'auto'
+                """
+            )

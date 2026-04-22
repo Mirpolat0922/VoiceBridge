@@ -38,7 +38,7 @@ Downloads Telegram media and normalizes it for ASR.
 
 Routes by language:
 
-- `faster-whisper` for `auto`, Russian, and English
+- `faster-whisper` for Russian and English
 - NVIDIA NeMo Uzbek ASR for explicit Uzbek mode
 
 ### `services/pipeline/`

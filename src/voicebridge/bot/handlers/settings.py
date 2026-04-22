@@ -2,16 +2,17 @@ from aiogram import F, Router
 from aiogram.filters import Command, CommandObject
 from aiogram.types import CallbackQuery, Message
 
-from voicebridge.bot.ui.settings_keyboard import (
-    build_control_center_keyboard,
-    build_result_keyboard,
-)
+from voicebridge.bot.ui.settings_keyboard import build_control_center_keyboard
 from voicebridge.domain.languages import LanguageCode
 from voicebridge.domain.reply_modes import ReplyMode
 from voicebridge.schemas.user_settings import UserSettings
 from voicebridge.services.user_settings import UserSettingsService
 
 router = Router()
+
+
+def _language_line(title: str, language: LanguageCode) -> str:
+    return f"{title}: {language.label} ({language.value.upper()})"
 
 
 def _format_settings_text(
@@ -22,31 +23,30 @@ def _format_settings_text(
     section: str = "main",
 ) -> str:
     section_help = {
-        "main": "Choose what you want to change.",
-        "source": "Select the language you usually speak in your next voice message.",
-        "target": "Select the language you want VoiceBridge to translate into.",
-        "reply": "Choose whether the bot should send text only or text plus voice.",
+        "main": "These settings are global and will be used for your next voice messages.",
+        "source": "Choose the language you will speak in your next voice message.",
+        "target": "Choose the language VoiceBridge should translate into.",
+        "reply": "Choose whether you want text only or text plus a voice reply.",
     }
     return (
-        "VoiceBridge Control Center\n\n"
-        "Current configuration\n"
-        f"Source: {source_language.value.upper()}\n"
-        f"Target: {target_language.value.upper()}\n"
-        f"Reply mode: {reply_mode.label}\n\n"
+        "VoiceBridge Settings\n\n"
+        "Current setup\n"
+        f"🗣 {_language_line('Source', source_language)}\n"
+        f"🎯 {_language_line('Target', target_language)}\n"
+        f"🔊 Reply: {reply_mode.label}\n\n"
         f"{section_help.get(section, section_help['main'])}\n\n"
         "Quick commands\n"
-        "/source auto|uz|ru|en\n"
+        "/source uz|ru|en\n"
         "/target uz|ru|en\n"
         "/reply text_only|text_and_voice\n"
-        "/settings\n\n"
-        "Tip: You can change settings from result messages without losing previous results."
+        "/settings"
     )
 
 
 def _is_control_panel_message(text: str | None) -> bool:
     if not text:
         return False
-    return text.startswith("VoiceBridge Control Center")
+    return text.startswith("VoiceBridge Settings")
 
 
 async def _refresh_message_for_settings(
@@ -70,8 +70,14 @@ async def _refresh_message_for_settings(
         )
         return
 
-    await callback_query.message.edit_reply_markup(
-        reply_markup=build_result_keyboard(settings, section=section),
+    await callback_query.message.answer(
+        _format_settings_text(
+            settings.source_language,
+            settings.target_language,
+            settings.reply_mode,
+            section=section,
+        ),
+        reply_markup=build_control_center_keyboard(settings, section=section),
     )
 
 
@@ -130,7 +136,7 @@ async def handle_source_command(
 
     await message.answer(
         "Source language updated.\n\n"
-        f"New source language: {settings.source_language.value.upper()}\n"
+        f"New source language: {settings.source_language.label}\n"
         "Use /settings to review your current configuration.",
         reply_markup=build_control_center_keyboard(settings),
     )
@@ -174,7 +180,7 @@ async def handle_target_command(
 
     await message.answer(
         "Target language updated.\n\n"
-        f"New target language: {settings.target_language.value.upper()}\n"
+        f"New target language: {settings.target_language.label}\n"
         "Use /settings to review your current configuration.",
         reply_markup=build_control_center_keyboard(settings),
     )
@@ -237,7 +243,7 @@ async def handle_ui_callback(
         await callback_query.answer()
         return
 
-    _, surface, action, *rest = parts
+    _, _surface, action, *rest = parts
     settings = user_settings_service.get_or_create(callback_query.from_user.id)
 
     if action == "open":
@@ -251,18 +257,6 @@ async def handle_ui_callback(
         await callback_query.answer()
         return
 
-    if surface == "result" and action == "open_panel":
-        await callback_query.message.answer(
-            _format_settings_text(
-                settings.source_language,
-                settings.target_language,
-                settings.reply_mode,
-            ),
-            reply_markup=build_control_center_keyboard(settings),
-        )
-        await callback_query.answer("Control center opened.")
-        return
-
     if action == "set_source":
         source_language = LanguageCode(rest[0])
         if settings.source_language is source_language:
@@ -272,8 +266,8 @@ async def handle_ui_callback(
             callback_query.from_user.id,
             source_language=source_language,
         )
-        await _refresh_message_for_settings(callback_query, settings, section="source")
-        await callback_query.answer("Source language updated.")
+        await _refresh_message_for_settings(callback_query, settings, section="main")
+        await callback_query.answer(f"Source set to {source_language.label}.")
         return
 
     if action == "set_target":
@@ -285,8 +279,8 @@ async def handle_ui_callback(
             callback_query.from_user.id,
             target_language=target_language,
         )
-        await _refresh_message_for_settings(callback_query, settings, section="target")
-        await callback_query.answer("Target language updated.")
+        await _refresh_message_for_settings(callback_query, settings, section="main")
+        await callback_query.answer(f"Target set to {target_language.label}.")
         return
 
     if action == "set_reply":
@@ -298,8 +292,8 @@ async def handle_ui_callback(
             callback_query.from_user.id,
             reply_mode=reply_mode,
         )
-        await _refresh_message_for_settings(callback_query, settings, section="reply")
-        await callback_query.answer("Reply mode updated.")
+        await _refresh_message_for_settings(callback_query, settings, section="main")
+        await callback_query.answer(f"Reply mode set to {reply_mode.label}.")
         return
 
     await callback_query.answer()

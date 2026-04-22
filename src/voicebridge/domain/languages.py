@@ -2,10 +2,18 @@ from enum import StrEnum
 
 
 class LanguageCode(StrEnum):
-    AUTO = "auto"
     UZ = "uz"
     RU = "ru"
     EN = "en"
+
+    @property
+    def label(self) -> str:
+        labels = {
+            LanguageCode.UZ: "Uzbek",
+            LanguageCode.RU: "Russian",
+            LanguageCode.EN: "English",
+        }
+        return labels[self]
 
     @classmethod
     def supported(cls) -> tuple["LanguageCode", ...]:
@@ -13,4 +21,4 @@ class LanguageCode(StrEnum):
 
     @classmethod
     def selectable_sources(cls) -> tuple["LanguageCode", ...]:
-        return (cls.AUTO, cls.UZ, cls.RU, cls.EN)
+        return cls.supported()

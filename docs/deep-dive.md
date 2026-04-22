@@ -7,7 +7,7 @@
 3. Audio service converts it into mono 16 kHz WAV.
 4. ASR service routes by language:
    - Uzbek -> NVIDIA NeMo FastConformer
-   - Russian / English / Auto -> faster-whisper
+   - Russian / English -> faster-whisper
 5. Groq `llama-3.3-70b-versatile` post-processes the transcript and translates it in one call.
 6. If reply mode is `text_and_voice`, `gTTS` generates a translated voice reply.
 7. Bot edits the progress message into the final text result and optionally sends the voice reply.
@@ -30,7 +30,6 @@ This makes the code easier to reason about and avoids quota burn caused by fallb
 
 - `faster-whisper`
   - used for English and Russian
-  - also used for `auto` mode
 - `nvidia/stt_uz_fastconformer_hybrid_large_pc`
   - used for explicit Uzbek mode
   - still treated as beta

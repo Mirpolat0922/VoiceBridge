@@ -23,10 +23,6 @@ class Settings(BaseSettings):
         default="int8",
         description="Compute type for faster-whisper inference.",
     )
-    asr_provider_auto: str = Field(
-        default="faster_whisper",
-        description="ASR provider used when source language is auto.",
-    )
     asr_provider_uz: str = Field(
         default="nemo_uzbek",
         description="ASR provider used for Uzbek.",
@@ -68,7 +64,7 @@ class Settings(BaseSettings):
         description="Maximum completion tokens requested from Groq text generation calls.",
     )
     default_source_language: str = Field(
-        default="auto",
+        default="ru",
         description="Default source language for new users.",
     )
     default_target_language: str = Field(

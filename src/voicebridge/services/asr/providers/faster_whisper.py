@@ -44,12 +44,10 @@ class FasterWhisperAsrProvider(AsrProvider):
         *,
         requested_language: LanguageCode,
     ) -> TranscriptionResult:
-        language = None if requested_language is LanguageCode.AUTO else requested_language.value
-
         try:
             segments, info = self._model.transcribe(
                 str(audio.normalized_path),
-                language=language,
+                language=requested_language.value,
                 vad_filter=True,
             )
         except Exception as error:  # pragma: no cover - model execution boundary

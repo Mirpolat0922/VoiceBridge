@@ -11,75 +11,63 @@ def build_control_center_keyboard(
     *,
     section: str = "main",
 ) -> InlineKeyboardMarkup:
-    return _build_keyboard(settings, surface="panel", section=section)
-
-
-def build_result_keyboard(
-    settings: UserSettings,
-    *,
-    section: str = "main",
-) -> InlineKeyboardMarkup:
-    return _build_keyboard(settings, surface="result", section=section)
+    return _build_keyboard(settings, section=section)
 
 
 def _build_keyboard(
     settings: UserSettings,
     *,
-    surface: str,
     section: str,
 ) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
 
     if section == "main":
         builder.button(
-            text=f"Source {settings.source_language.value.upper()} >",
-            callback_data=f"ui:{surface}:open:source",
+            text=f"🗣 Source: {settings.source_language.label}",
+            callback_data="ui:panel:open:source",
         )
         builder.button(
-            text=f"Target {settings.target_language.value.upper()} >",
-            callback_data=f"ui:{surface}:open:target",
+            text=f"🎯 Target: {settings.target_language.label}",
+            callback_data="ui:panel:open:target",
         )
         builder.button(
-            text=f"Reply {settings.reply_mode.label} >",
-            callback_data=f"ui:{surface}:open:reply",
+            text=f"🔊 Reply: {settings.reply_mode.label}",
+            callback_data="ui:panel:open:reply",
         )
-        if surface == "result":
-            builder.button(
-                text="Open Control Center",
-                callback_data="ui:result:open_panel",
-            )
-            builder.adjust(2, 1, 1)
-        else:
-            builder.adjust(2, 1)
+        builder.adjust(1, 1, 1)
         return builder.as_markup()
 
     if section == "source":
         for language in LanguageCode.selectable_sources():
-            prefix = "● " if settings.source_language is language else ""
-            label = f"{prefix}{language.value.upper()}"
-            builder.button(text=label, callback_data=f"ui:{surface}:set_source:{language.value}")
-        builder.button(text="< Back", callback_data=f"ui:{surface}:back")
-        builder.adjust(2, 2, 1)
+            prefix = "✓ " if settings.source_language is language else ""
+            builder.button(
+                text=f"{prefix}{language.label}",
+                callback_data=f"ui:panel:set_source:{language.value}",
+            )
+        builder.button(text="← Back", callback_data="ui:panel:back")
+        builder.adjust(1, 1, 1, 1)
         return builder.as_markup()
 
     if section == "target":
         for language in LanguageCode.supported():
-            prefix = "● " if settings.target_language is language else ""
-            label = f"{prefix}{language.value.upper()}"
-            builder.button(text=label, callback_data=f"ui:{surface}:set_target:{language.value}")
-        builder.button(text="< Back", callback_data=f"ui:{surface}:back")
-        builder.adjust(2, 1, 1)
+            prefix = "✓ " if settings.target_language is language else ""
+            builder.button(
+                text=f"{prefix}{language.label}",
+                callback_data=f"ui:panel:set_target:{language.value}",
+            )
+        builder.button(text="← Back", callback_data="ui:panel:back")
+        builder.adjust(1, 1, 1, 1)
         return builder.as_markup()
 
     if section == "reply":
         for reply_mode in ReplyMode:
-            label = f"{'● ' if settings.reply_mode is reply_mode else ''}{reply_mode.label}"
+            label = f"{'✓ ' if settings.reply_mode is reply_mode else ''}{reply_mode.label}"
             builder.button(
                 text=label,
-                callback_data=f"ui:{surface}:set_reply:{reply_mode.value}",
+                callback_data=f"ui:panel:set_reply:{reply_mode.value}",
             )
-        builder.button(text="< Back", callback_data=f"ui:{surface}:back")
+        builder.button(text="← Back", callback_data="ui:panel:back")
         builder.adjust(1, 1, 1)
         return builder.as_markup()
 
-    return _build_keyboard(settings, surface=surface, section="main")
+    return _build_keyboard(settings, section="main")

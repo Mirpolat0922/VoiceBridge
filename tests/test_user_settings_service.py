@@ -14,7 +14,7 @@ def build_service(database_path: Path) -> UserSettingsService:
     repository = UserSettingsRepository(database)
     return UserSettingsService(
         repository=repository,
-        default_source_language="auto",
+        default_source_language="ru",
         default_target_language="ru",
         default_reply_mode="text_and_voice",
     )
@@ -26,7 +26,7 @@ def test_get_or_create_returns_default_settings(tmp_path: Path) -> None:
     settings = service.get_or_create(telegram_user_id=123)
 
     assert settings.telegram_user_id == 123
-    assert settings.source_language is LanguageCode.AUTO
+    assert settings.source_language is LanguageCode.RU
     assert settings.target_language is LanguageCode.RU
     assert settings.reply_mode is ReplyMode.TEXT_AND_VOICE
     assert settings.uzbek_beta_notice_enabled is True

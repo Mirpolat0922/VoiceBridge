@@ -18,7 +18,7 @@ The project uses one clear production path:
 - Telegram bot framework: `aiogram`
 - Audio normalization: `ffmpeg`
 - ASR:
-  - `faster-whisper` for `auto`, Russian, and English
+  - `faster-whisper` for Russian and English
   - NVIDIA NeMo Uzbek ASR for explicit Uzbek mode
 - Text post-processing and translation: Groq `llama-3.3-70b-versatile`
 - Voice reply: `gTTS`
@@ -88,7 +88,7 @@ The bot supports these user commands:
 ```text
 /start
 /settings
-/source auto|uz|ru|en
+/source uz|ru|en
 /target uz|ru|en
 /reply text_only|text_and_voice
 ```
@@ -96,6 +96,7 @@ The bot supports these user commands:
 ## Behavior Notes
 
 - Uzbek is explicitly treated as beta.
+- Users should choose the exact source language before sending a voice note.
 - Temporary input audio, normalized WAV files, and generated TTS files are deleted after each
   request.
 - User settings are stored in SQLite; transcript history is not stored separately because

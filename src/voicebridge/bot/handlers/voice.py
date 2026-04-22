@@ -4,7 +4,6 @@ import logging
 from aiogram import Bot, F, Router
 from aiogram.types import FSInputFile, Message, ReplyParameters
 
-from voicebridge.bot.ui.settings_keyboard import build_result_keyboard
 from voicebridge.domain.languages import LanguageCode
 from voicebridge.domain.reply_modes import ReplyMode
 from voicebridge.services.asr import AsrError, AsrService
@@ -14,6 +13,13 @@ from voicebridge.services.tts import TtsError, TtsService
 from voicebridge.services.user_settings import UserSettingsService
 
 router = Router()
+
+
+def _language_summary(source_language: LanguageCode, target_language: LanguageCode) -> str:
+    return (
+        f"{source_language.label} ({source_language.value.upper()}) -> "
+        f"{target_language.label} ({target_language.value.upper()})"
+    )
 
 
 async def _cleanup_request_temporary_files(
@@ -90,16 +96,13 @@ async def handle_voice_message(
             normalized_audio,
             requested_language=requested_language,
         )
-        source_language = transcription.detected_language or requested_language
-        if source_language is LanguageCode.AUTO:
-            raise GroqTextPipelineError("Source language could not be resolved for translation.")
         await progress_message.edit_text(
             f"VoiceBridge is processing this voice note.\nStage 4/{total_stages}: translating text"
         )
         pipeline_result = await asyncio.to_thread(
             groq_text_pipeline.process,
             transcription.text,
-            source_language=source_language,
+            source_language=requested_language,
             target_language=target_language,
         )
         if user_settings.reply_mode is ReplyMode.TEXT_AND_VOICE:
@@ -147,14 +150,6 @@ async def handle_voice_message(
             },
         )
 
-        detected_language_text = (
-            transcription.detected_language.value.upper()
-            if transcription.detected_language is not None
-            else "UNKNOWN"
-        )
-        requested_language_text = (
-            "AUTO" if requested_language is LanguageCode.AUTO else requested_language.value.upper()
-        )
         uzbek_notice = ""
         if (
             requested_language is LanguageCode.UZ
@@ -163,25 +158,20 @@ async def handle_voice_message(
             uzbek_notice = "\nUzbek transcription is currently in beta mode."
         voice_notice = ""
         if user_settings.reply_mode is ReplyMode.TEXT_AND_VOICE and synthesized_speech is None:
-            voice_notice = "\nTranslated voice reply is unavailable for this request."
+            voice_notice = "\n\nTranslated voice reply was unavailable for this request."
 
         await progress_message.edit_text(
             "VoiceBridge Result\n\n"
-            "Session\n"
-            f"Requested source: {requested_language_text}\n"
-            f"Detected source: {detected_language_text}\n"
-            f"Target: {target_language.value.upper()}\n"
-            f"Reply mode: {user_settings.reply_mode.label}\n\n"
-            "Processing\n"
-            f"ASR: {transcription.provider_name}\n"
-            f"Text pipeline: {pipeline_result.provider_name}\n\n"
-            "Transcript\n"
+            f"🌐 Languages: {_language_summary(requested_language, target_language)}\n"
+            f"🔊 Reply mode: {user_settings.reply_mode.label}\n\n"
+            "📝 Transcript\n"
             f"{transcription.text}\n\n"
-            "Translated message\n"
+            "🌍 Translated message\n"
             f"{pipeline_result.translated_text}"
             f"{voice_notice}"
-            f"{uzbek_notice}",
-            reply_markup=build_result_keyboard(user_settings),
+            f"{uzbek_notice}\n\n"
+            "⚙️ Settings are global. Use /settings any time to change source, target, "
+            "or reply mode.",
         )
 
         if synthesized_speech is not None:

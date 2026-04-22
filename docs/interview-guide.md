@@ -9,7 +9,7 @@ VoiceBridge is a Telegram bot that receives a voice message in Uzbek, Russian, o
 This project is not just a chatbot. It is a multilingual speech pipeline with several AI components that must work together:
 
 - speech-to-text
-- cleanup
+- transcript post-processing
 - translation
 - optional text-to-speech
 - language-aware routing
@@ -49,7 +49,7 @@ The project uses SQLite first because it is enough for a portfolio bot and keeps
 
 The project does not tie Telegram handlers directly to one speech model. Instead, it uses an ASR service with provider routing. That makes it possible to use one provider for English and Russian and a different provider for Uzbek later, without rewriting the rest of the bot.
 
-In the current implementation, the source language can be set explicitly. This matters because Uzbek performs poorly under generic auto-detection in Whisper, so the product can route Uzbek requests to a dedicated provider.
+In the current implementation, the user chooses the source language explicitly. This matters because Uzbek performs poorly under generic auto-detection in Whisper, so the product routes Uzbek requests to a dedicated provider instead of guessing.
 
 ## Text Pipeline Story
 
