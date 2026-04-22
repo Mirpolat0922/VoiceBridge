@@ -54,24 +54,98 @@ src/voicebridge/
   utils/          Logging and runtime helpers
 ```
 
-## Local Development
+## Setup And Run
 
-Use Python `3.11`, especially on macOS for the optional Uzbek ASR path.
+Use Python `3.11`. The commands below install the full project, including Uzbek ASR support.
+
+### 1. Clone The Repository
+
+```bash
+git clone https://github.com/Mirpolat0922/VoiceBridge.git
+cd VoiceBridge
+```
+
+### 2. Install System Dependencies
+
+VoiceBridge needs `ffmpeg` for audio conversion and `cmake` for the full Uzbek ASR setup.
+
+**macOS**
+
+```bash
+brew install ffmpeg cmake
+```
+
+**Ubuntu / Debian**
+
+```bash
+sudo apt update
+sudo apt install -y ffmpeg cmake
+```
+
+**Windows**
+
+- Install Python `3.11`
+- Install `ffmpeg` and make sure it is available in `PATH`
+- Install `cmake` and make sure it is available in `PATH`
+
+### 3. Create A Virtual Environment
+
+**macOS / Linux**
 
 ```bash
 python3.11 -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev]"
+```
+
+**Windows PowerShell**
+
+```powershell
+py -3.11 -m venv .venv
+.venv\Scripts\Activate.ps1
+```
+
+### 4. Install Python Dependencies
+
+```bash
+pip install -e ".[dev,uzbek_asr]"
+```
+
+### 5. Create The Environment File
+
+**macOS / Linux**
+
+```bash
 cp .env.example .env
+```
+
+**Windows PowerShell**
+
+```powershell
+copy .env.example .env
+```
+
+Then open `.env` and set at least:
+
+```env
+VOICEBRIDGE_BOT_TOKEN=your_telegram_bot_token
+VOICEBRIDGE_GROQ_API_KEY=your_groq_key
+VOICEBRIDGE_GROQ_MODEL_NAME=llama-3.3-70b-versatile
+```
+
+Other Groq settings already have sensible defaults in `.env.example`.
+
+### 6. Run The Bot
+
+```bash
 python -m voicebridge.main
 ```
 
-For the optional Uzbek ASR provider:
+### First Run Notes
 
-```bash
-brew install cmake
-pip install -e ".[dev,uzbek_asr]"
-```
+- `faster-whisper` downloads its model the first time it is used.
+- The NeMo Uzbek model is downloaded the first time Uzbek ASR is used.
+- `gTTS` and Groq require internet access.
+- First-run setup can be noticeably slower because model files are being downloaded.
 
 ## Required `.env` Settings
 
@@ -80,8 +154,6 @@ VOICEBRIDGE_BOT_TOKEN=your_telegram_bot_token
 VOICEBRIDGE_GROQ_API_KEY=your_groq_key
 VOICEBRIDGE_GROQ_MODEL_NAME=llama-3.3-70b-versatile
 ```
-
-Other Groq settings have sensible defaults in `.env.example`.
 
 The bot supports these user commands:
 
